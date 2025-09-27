@@ -109,7 +109,13 @@ function goHome() {
 }
     // ユーザーが追加した問題を読み込む
 const userData = JSON.parse(localStorage.getItem("userQuestions") || "[]");
-questions = questions.concat(userData);
+
+if (genre === "random") {
+  questions = questions.concat(userData);
+} else {
+  const userFiltered = userData.filter(q => q.genre === genre);
+  questions = questions.concat(userFiltered);
+}
   </script>
 </body>
 </html>
