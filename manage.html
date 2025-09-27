@@ -47,18 +47,24 @@
     }
 
     // --- データを読み込み ---
-    function loadQuestions() {
-      const list = document.getElementById("questionList");
-      list.innerHTML = "";
+ function loadQuestions() {
+  const list = document.getElementById("questionList");
+  list.innerHTML = "";
 
-      const key = "userQuestions_" + currentUser;
-　    let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
+  const currentUser = localStorage.getItem("currentUser");
+  if (!currentUser) {
+    alert("ログインしてください！");
+    location.href = "register.html";
+    return;
+  }
 
+  const key = "userQuestions_" + currentUser;
+  let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
 
-      if (userQuestions.length === 0) {
-        list.innerHTML = "<p>まだオリジナル問題がありません。</p>";
-        return;
-      }
+  if (userQuestions.length === 0) {
+    list.innerHTML = "<p>まだオリジナル問題がありません。</p>";
+    return;
+  }
 
       // ジャンルごとにグループ化
       const grouped = {};
