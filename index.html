@@ -61,9 +61,18 @@
   <button onclick="showTotalStats()">プレイした累計問題数</button>
 
   <h2>オリジナル問題を追加</h2>
-  <input type="file" id="userImage" accept="image/*"><br>
-  <input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
-  <button onclick="saveUserQuestion()">保存する</button>
+<input type="file" id="userImage" accept="image/*"><br>
+<input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
+<label for="userGenre">ジャンル:</label>
+<select id="userGenre">
+  <option value="painting">絵画</option>
+  <option value="history">歴史</option>
+  <option value="geography">地理</option>
+  <option value="anime">アニメ</option>
+  <option value="user">オリジナル</option>
+</select><br>
+<button onclick="saveUserQuestion()">保存する</button>
+
 
   <script>
     // クイズ開始
@@ -90,9 +99,10 @@
       const total = localStorage.getItem("quizTotal") || 0;
       alert("累計プレイした問題数: " + total + "問");
     }
-    function saveUserQuestion() {
+   function saveUserQuestion() {
   const fileInput = document.getElementById("userImage");
   const answerInput = document.getElementById("userAnswerInput");
+  const genreInput = document.getElementById("userGenre");
 
   if (!fileInput.files[0] || !answerInput.value.trim()) {
     alert("画像と答えを両方入力してください！");
@@ -103,11 +113,12 @@
   reader.onload = function(e) {
     let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
     userQuestions.push({
-      file: e.target.result,  // DataURLとして保存
-      answer: [answerInput.value.trim()]
+      file: e.target.result,  // DataURL
+      answer: [answerInput.value.trim()],
+      genre: genreInput.value // 選んだジャンルを保存
     });
     localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
-    alert("保存しました！（このブラウザ専用です）");
+    alert("保存しました！（ジャンル: " + genreInput.value + "）");
     fileInput.value = "";
     answerInput.value = "";
   };
