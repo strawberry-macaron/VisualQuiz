@@ -34,8 +34,6 @@
   <button onclick="markAnswer(false)" disabled>不正解…</button>
   <!-- 画面の操作ボタン -->
   <div style="margin-top:20px;">
-  <button onclick="prevQuestion()">前へ</button>
-  <button onclick="nextQuestion()">次へ</button>
   <button onclick="goHome()">ホームに戻る</button>
   </div>
 
@@ -106,36 +104,6 @@
 
     // ページを開いたら問題を読み込む
     loadQuestions();
-    let currentIndex = 0; // 現在の問題番号
-let quizData = [];    // JSON読み込み後に入る
-let currentQuestion;  // 現在の問題
-
-function loadQuestion(index) {
-  if (index < 0 || index >= quizData.length) return;
-  currentIndex = index;
-  currentQuestion = quizData[currentIndex];
-  document.getElementById("quiz-image").src = "images/" + currentQuestion.file;
-  document.getElementById("userAnswer").value = "";
-  document.getElementById("answerArea").textContent = "";
-  document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = true);
-}
-
-function nextQuestion() {
-  if (currentIndex < quizData.length - 1) {
-    loadQuestion(currentIndex + 1);
-  } else {
-    alert("これ以上問題はありません！");
-  }
-}
-
-function prevQuestion() {
-  if (currentIndex > 0) {
-    loadQuestion(currentIndex - 1);
-  } else {
-    alert("これ以上戻れません！");
-  }
-}
-
 function goHome() {
   window.location.href = "index.html";
 }
