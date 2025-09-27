@@ -12,7 +12,12 @@
     }
     h1 {
       color: #ff69b4;
-      margin-bottom: 40px;
+      margin-bottom: 10px;
+    }
+    #welcome {
+      margin-bottom: 30px;
+      font-size: 18px;
+      color: #333;
     }
     button, select {
       display: block;
@@ -39,6 +44,7 @@
 </head>
 <body>
   <h1>ビジュアルクイズ</h1>
+  <p id="welcome"></p>
 
   <!-- ジャンル選択 -->
   <label for="genre">ジャンルを選んでスタート:</label>
@@ -86,6 +92,14 @@
   <button onclick="saveUserQuestion()">保存する</button>
 
   <script>
+    // --- ログインチェック ---
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
+      alert("先にユーザー登録／ログインしてください！");
+      location.href = "register.html";
+    }
+    document.getElementById("welcome").textContent = "ログイン中: " + currentUser;
+
     // --- クイズ開始 ---
     function startQuiz() {
       const genre = document.getElementById("genre").value;
@@ -100,13 +114,13 @@
     // --- 今日のプレイ数 ---
     function showTodayStats() {
       const today = new Date().toLocaleDateString();
-      const count = localStorage.getItem("quizCount_" + today) || 0;
+      const count = localStorage.getItem("quizCount_" + currentUser + "_" + today) || 0;
       alert("今日プレイした問題数: " + count + "問");
     }
 
     // --- 累計プレイ数 ---
     function showTotalStats() {
-      const total = localStorage.getItem("quizTotal") || 0;
+      const total = localStorage.getItem("quizTotal_" + currentUser) || 0;
       alert("累計プレイした問題数: " + total + "問");
     }
 
@@ -152,13 +166,14 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+        const key = "userQuestions_" + currentUser;  // ユーザーごとのキー
+        let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
         userQuestions.push({
           file: e.target.result,
           answer: [answerInput.value.trim()],
           genre: genreInput.value
         });
-        localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
+        localStorage.setItem(key, JSON.stringify(userQuestions));
         alert("保存しました！（ジャンル: " + genreInput.value + "）");
 
         // リセット
@@ -169,8 +184,6 @@
       };
       reader.readAsDataURL(file);
     }
-    const currentUser = localStorage.getItem("currentUser");
-    const key = "userQuestions_" + currentUser;
   </script>
 </body>
 </html>
