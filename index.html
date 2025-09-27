@@ -169,6 +169,8 @@
       };
       reader.readAsDataURL(file);
     }
+    const currentUser = localStorage.getItem("currentUser");
+    const key = "userQuestions_" + currentUser;
   </script>
 </body>
 </html>
