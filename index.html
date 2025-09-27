@@ -61,69 +61,111 @@
   <button onclick="showTotalStats()">プレイした累計問題数</button>
 
   <h2>オリジナル問題を追加</h2>
-<input type="file" id="userImage" accept="image/*"><br>
-<input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
-<label for="userGenre">ジャンル:</label>
-<select id="userGenre">
-  <option value="painting">絵画</option>
-  <option value="history">歴史</option>
-  <option value="geography">地理</option>
-  <option value="anime">アニメ</option>
-  <option value="user">オリジナル</option>
-</select><br>
-<button onclick="saveUserQuestion()">保存する</button>
-
+  <!-- ドロップゾーン -->
+  <div id="dropZone"
+       style="width:300px;height:200px;border:2px dashed #87cefa;
+              border-radius:10px;line-height:200px;
+              margin:20px auto;cursor:pointer;">
+    ここに画像をドラッグ&ドロップ
+  </div>
+  <!-- プレビュー表示 -->
+  <img id="preview" style="max-width:200px;display:none;margin:10px auto;">
+  <input type="file" id="userImage" accept="image/*"><br>
+  <input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
+  <label for="userGenre">ジャンル:</label>
+  <select id="userGenre">
+    <option value="painting">絵画</option>
+    <option value="history">歴史</option>
+    <option value="geography">地理</option>
+    <option value="anime">アニメ</option>
+    <option value="user">オリジナル</option>
+  </select><br>
+  <button onclick="saveUserQuestion()">保存する</button>
 
   <script>
-    // クイズ開始
+    // --- クイズ開始 ---
     function startQuiz() {
       const genre = document.getElementById("genre").value;
       if (!genre) {
         alert("ジャンルを選んでください！");
         return;
       }
-      // 選んだジャンルを保存（quiz.html で使う）
       localStorage.setItem("selectedGenre", genre);
       location.href = "quiz.html";
     }
 
-    // 今日の問題数を表示
+    // --- 今日のプレイ数 ---
     function showTodayStats() {
       const today = new Date().toLocaleDateString();
       const count = localStorage.getItem("quizCount_" + today) || 0;
       alert("今日プレイした問題数: " + count + "問");
     }
 
-    // 累計問題数を表示
+    // --- 累計プレイ数 ---
     function showTotalStats() {
       const total = localStorage.getItem("quizTotal") || 0;
       alert("累計プレイした問題数: " + total + "問");
     }
-   function saveUserQuestion() {
-  const fileInput = document.getElementById("userImage");
-  const answerInput = document.getElementById("userAnswerInput");
-  const genreInput = document.getElementById("userGenre");
 
-  if (!fileInput.files[0] || !answerInput.value.trim()) {
-    alert("画像と答えを両方入力してください！");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
-    userQuestions.push({
-      file: e.target.result,  // DataURL
-      answer: [answerInput.value.trim()],
-      genre: genreInput.value // 選んだジャンルを保存
+    // --- ドラッグ&ドロップ処理 ---
+    let droppedFile = null;
+    const dropZone = document.getElementById("dropZone");
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.style.background = "#e0f7ff";
     });
-    localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
-    alert("保存しました！（ジャンル: " + genreInput.value + "）");
-    fileInput.value = "";
-    answerInput.value = "";
-  };
-  reader.readAsDataURL(fileInput.files[0]);
-}
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.style.background = "";
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.style.background = "";
+
+      droppedFile = e.dataTransfer.files[0];
+      if (droppedFile && droppedFile.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const preview = document.getElementById("preview");
+          preview.src = evt.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(droppedFile);
+      } else {
+        alert("画像ファイルをドロップしてください！");
+      }
+    });
+
+    // --- 保存処理（両対応） ---
+    function saveUserQuestion() {
+      const fileInput = document.getElementById("userImage");
+      const answerInput = document.getElementById("userAnswerInput");
+      const genreInput = document.getElementById("userGenre");
+
+      const file = droppedFile || fileInput.files[0];
+      if (!file || !answerInput.value.trim()) {
+        alert("画像と答えを両方入力してください！");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+        userQuestions.push({
+          file: e.target.result,
+          answer: [answerInput.value.trim()],
+          genre: genreInput.value
+        });
+        localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
+        alert("保存しました！（ジャンル: " + genreInput.value + "）");
+
+        // リセット
+        droppedFile = null;
+        fileInput.value = "";
+        document.getElementById("preview").style.display = "none";
+        answerInput.value = "";
+      };
+      reader.readAsDataURL(file);
+    }
   </script>
 </body>
 </html>
