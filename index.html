@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ビジュアルクイズ ホーム</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #fefefe;
+      padding: 50px;
+    }
+    h1 {
+      color: #ff69b4;
+      margin-bottom: 40px;
+    }
+    button, select {
+      display: block;
+      margin: 20px auto;
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #87cefa;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #4682b4;
+    }
+    select {
+      background: #fff;
+      color: #333;
+      border: 2px solid #87cefa;
+      width: 220px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ビジュアルクイズ</h1>
+
+  <!-- ジャンル選択 -->
+  <label for="genre">ジャンルを選んでスタート:</label>
+  <select id="genre">
+    <option value="" disabled selected>ジャンルを選択</option>
+    <option value="history">歴史</option>
+    <option value="geography">地理</option>
+    <option value="anime">アニメ</option>
+    <option value="random">ランダム</option>
+  </select>
+
+  <!-- クイズ開始ボタン -->
+  <button onclick="startQuiz()">クイズをプレイ</button>
+
+  <!-- 今日のプレイ記録ボタン -->
+  <button onclick="showTodayStats()">今日プレイした問題数</button>
+
+  <!-- 累計記録ボタン -->
+  <button onclick="showTotalStats()">プレイした累計問題数</button>
+
+  <script>
+    // クイズ開始
+    function startQuiz() {
+      const genre = document.getElementById("genre").value;
+      if (!genre) {
+        alert("ジャンルを選んでください！");
+        return;
+      }
+      // 選んだジャンルを保存（quiz.html で使う）
+      localStorage.setItem("selectedGenre", genre);
+      location.href = "quiz.html";
+    }
+
+    // 今日の問題数を表示
+    function showTodayStats() {
+      const today = new Date().toLocaleDateString();
+      const count = localStorage.getItem("quizCount_" + today) || 0;
+      alert("今日プレイした問題数: " + count + "問");
+    }
+
+    // 累計問題数を表示
+    function showTotalStats() {
+      const total = localStorage.getItem("quizTotal") || 0;
+      alert("累計プレイした問題数: " + total + "問");
+    }
+  </script>
+</body>
+</html>
