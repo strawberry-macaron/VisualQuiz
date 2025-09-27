@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ユーザー登録</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 50px;
+      background: #fefefe;
+    }
+    h1 {
+      color: #ff69b4;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      background: #87cefa;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #4682b4;
+    }
+  </style>
+</head>
+<body>
+  <h1>ユーザー登録 / ログイン</h1>
+  <input type="text" id="username" placeholder="ユーザー名を入力"><br>
+  <button onclick="registerUser()">登録</button>
+  <button onclick="loginUser()">ログイン</button>
+
+  <p id="message"></p>
+
+  <script>
+    function registerUser() {
+      const username = document.getElementById("username").value.trim();
+      if (!username) {
+        alert("ユーザー名を入力してください！");
+        return;
+      }
+
+      // 登録済みユーザー一覧をlocalStorageに保存
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      if (users.includes(username)) {
+        document.getElementById("message").textContent = "すでに登録されています。ログインしてください。";
+        return;
+      }
+
+      users.push(username);
+      localStorage.setItem("users", JSON.stringify(users));
+      document.getElementById("message").textContent = "ユーザー登録しました！";
+    }
+
+    function loginUser() {
+      const username = document.getElementById("username").value.trim();
+      if (!username) {
+        alert("ユーザー名を入力してください！");
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      if (!users.includes(username)) {
+        document.getElementById("message").textContent = "未登録のユーザーです。まず登録してください。";
+        return;
+      }
+
+      // ログイン状態を保存
+      localStorage.setItem("currentUser", username);
+      document.getElementById("message").textContent = "ログインしました！ ホームに移動します...";
+      setTimeout(() => {
+        location.href = "index.html";
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
