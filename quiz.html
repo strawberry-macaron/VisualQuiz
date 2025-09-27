@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>クイズ</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 30px; }
+    img { max-width: 400px; margin: 20px; border: 3px solid #ddd; border-radius: 10px; }
+    input { padding: 10px; font-size: 18px; width: 250px; }
+    button {
+      margin: 10px; padding: 10px 20px; font-size: 18px;
+      border: none; border-radius: 8px;
+      background: #87cefa; color: white; cursor: pointer;
+    }
+    button:hover { background: #4682b4; }
+    #answerArea { margin-top: 20px; font-size: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>クイズ</h1>
+  <div id="quiz-area">
+    <img id="quiz-image" src="" alt="クイズ画像">
+  </div>
+
+  <!-- ユーザー入力 -->
+  <input type="text" id="userAnswer" placeholder="答えを入力">
+  <button onclick="showAnswer()">答えを見る</button>
+
+  <!-- 答え表示 -->
+  <div id="answerArea"></div>
+
+  <!-- 自己採点ボタン -->
+  <button onclick="markAnswer(true)" disabled>正解！</button>
+  <button onclick="markAnswer(false)" disabled>不正解…</button>
+
+  <script>
+    let questions = [];
+    let currentQuestion;
+    let today = new Date().toLocaleDateString();
+
+    // 問題読み込み
+    async function loadQuestions() {
+      const genre = localStorage.getItem("selectedGenre") || "random";
+      let pool = [];
+
+      if (genre === "random") {
+        // すべてのジャンルを読み込む
+        const genres = ["history", "geography", "anime"];
+        for (let g of genres) {
+          const res = await fetch(`data/${g}.json`);
+          const data = await res.json();
+          pool = pool.concat(data);
+        }
+      } else {
+        // 選んだジャンルだけ読み込む
+        const res = await fetch(`data/${genre}.json`);
+        pool = await res.json();
+      }
+
+      questions = pool;
+      loadQuestion();
+    }
+
+    // 問題を1問出す
+    function loadQuestion() {
+      currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+      document.getElementById("quiz-image").src = "images/" + currentQuestion.file;
+      document.getElementById("userAnswer").value = "";
+      document.getElementById("answerArea").textContent = "";
+      document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = true);
+    }
+
+    // 答えを表示
+    function showAnswer() {
+      const userAns = document.getElementById("userAnswer").value.trim();
+      document.getElementById("answerArea").textContent =
+        "正解: " + currentQuestion.answer + " ／ あなたの答え: " + userAns;
+      document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = false);
+    }
+
+    // 自己採点
+    function markAnswer(isCorrect) {
+      let total = parseInt(localStorage.getItem("quizTotal") || "0");
+      total++;
+      localStorage.setItem("quizTotal", total);
+
+      let todayCount = parseInt(localStorage.getItem("quizCount_" + today) || "0");
+      todayCount++;
+      localStorage.setItem("quizCount_" + today, todayCount);
+
+      if (isCorrect) {
+        alert("正解にしました！");
+      } else {
+        alert("不正解にしました！");
+      }
+
+      loadQuestion();
+    }
+
+    // ページを開いたら問題を読み込む
+    loadQuestions();
+  </script>
+</body>
+</html>
