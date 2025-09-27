@@ -38,6 +38,14 @@
     }
     document.getElementById("welcome").textContent = "ログイン中: " + currentUser;
 
+    function logout() {
+      if (confirm("ログアウトしますか？")) {
+        localStorage.removeItem("currentUser");
+        alert("ログアウトしました。");
+        location.href = "register.html";
+      }
+    }
+
     // --- データを読み込み ---
     function loadQuestions() {
       const list = document.getElementById("questionList");
