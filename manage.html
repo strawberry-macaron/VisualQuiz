@@ -6,7 +6,6 @@
   <style>
     body { font-family: sans-serif; text-align: center; padding: 30px; }
     h1 { color: #ff69b4; }
-    #welcome { margin-bottom: 20px; font-size: 18px; }
     .question {
       border: 1px solid #ccc;
       padding: 10px;
@@ -21,50 +20,37 @@
       background: #87cefa; color: white; cursor: pointer;
     }
     button:hover { background: #4682b4; }
+    textarea {
+      width: 90%;
+      height: 60px;
+      font-size: 14px;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
   <h1>問題管理</h1>
-  <p id="welcome"></p>
   <button onclick="goHome()">ホームに戻る</button>
   <div id="questionList"></div>
 
   <script>
-    // --- ログイン確認 ---
-    const currentUser = localStorage.getItem("currentUser");
-    if (!currentUser) {
-      alert("先にユーザー登録／ログインしてください！");
-      location.href = "register.html";
-    }
-    document.getElementById("welcome").textContent = "ログイン中: " + currentUser;
+    // --- 問題一覧を表示 ---
+    function loadQuestions() {
+      const list = document.getElementById("questionList");
+      list.innerHTML = "";
 
-    function logout() {
-      if (confirm("ログアウトしますか？")) {
-        localStorage.removeItem("currentUser");
-        alert("ログアウトしました。");
-        location.href = "register.html";
+      const currentUser = localStorage.getItem("currentUser") || "guest";
+      const key = "userQuestions_" + currentUser;
+      let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
+
+      if (userQuestions.length === 0) {
+        list.innerHTML = "<p>まだオリジナル問題がありません。</p>";
+        return;
       }
-    }
 
-    // --- データを読み込み ---
- function loadQuestions() {
-  const list = document.getElementById("questionList");
-  list.innerHTML = "";
-
-  const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) {
-    alert("ログインしてください！");
-    location.href = "register.html";
-    return;
-  }
-
-  const key = "userQuestions_" + currentUser;
-  let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
-
-  if (userQuestions.length === 0) {
-    list.innerHTML = "<p>まだオリジナル問題がありません。</p>";
-    return;
-  }
+      // 補足情報も読み込み
+      const notesKey = "extraNotes_" + currentUser;
+      const notes = JSON.parse(localStorage.getItem(notesKey) || "{}");
 
       // ジャンルごとにグループ化
       const grouped = {};
@@ -81,10 +67,15 @@
         grouped[genre].forEach(q => {
           const div = document.createElement("div");
           div.className = "question";
+          const noteKey = q.file; // quiz.html と同じルールでキーにする
+          const note = notes[noteKey] || "";
+
           div.innerHTML = `
             <img src="${q.file}" alt="画像">
             <p><b>答え:</b> ${q.answer.join(", ")}</p>
-            <button onclick="editQuestion(${q.index})">編集</button>
+            <textarea id="note_${q.index}" placeholder="補足情報">${note}</textarea><br>
+            <button onclick="saveNote(${q.index})">補足を保存</button>
+            <button onclick="editQuestion(${q.index})">答えを編集</button>
             <button onclick="deleteQuestion(${q.index})">削除</button>
           `;
           list.appendChild(div);
@@ -92,9 +83,10 @@
       }
     }
 
-    // --- 削除処理 ---
+    // --- 問題削除 ---
     function deleteQuestion(index) {
       if (!confirm("この問題を削除しますか？")) return;
+      const currentUser = localStorage.getItem("currentUser") || "guest";
       const key = "userQuestions_" + currentUser;
       let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
       userQuestions.splice(index, 1);
@@ -102,8 +94,9 @@
       loadQuestions();
     }
 
-    // --- 編集処理 ---
+    // --- 答えを編集 ---
     function editQuestion(index) {
+      const currentUser = localStorage.getItem("currentUser") || "guest";
       const key = "userQuestions_" + currentUser;
       let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
       const newAnswer = prompt("新しい答えを入力（カンマ区切り可）", userQuestions[index].answer.join(","));
@@ -114,11 +107,27 @@
       }
     }
 
+    // --- 補足情報を保存 ---
+    function saveNote(index) {
+      const currentUser = localStorage.getItem("currentUser") || "guest";
+      const notesKey = "extraNotes_" + currentUser;
+      let notes = JSON.parse(localStorage.getItem(notesKey) || "{}");
+
+      const key = "userQuestions_" + currentUser;
+      let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
+      const question = userQuestions[index];
+
+      const textarea = document.getElementById("note_" + index);
+      notes[question.file] = textarea.value.trim();
+
+      localStorage.setItem(notesKey, JSON.stringify(notes));
+      alert("補足情報を保存しました！");
+    }
+
     function goHome() {
       location.href = "index.html";
     }
 
-    // ページ読み込み時に表示
     loadQuestions();
   </script>
 </body>
