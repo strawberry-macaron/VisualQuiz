@@ -32,58 +32,92 @@
   <!-- 自己採点ボタン -->
   <button onclick="markAnswer(true)" disabled>正解！</button>
   <button onclick="markAnswer(false)" disabled>不正解…</button>
+
   <!-- 画面の操作ボタン -->
   <div style="margin-top:20px;">
-  <button onclick="goHome()">ホームに戻る</button>
+    <button onclick="goHome()">ホームに戻る</button>
   </div>
-
 
   <script>
     let questions = [];
     let currentQuestion;
-    let today = new Date().toLocaleDateString();
+    const today = new Date().toLocaleDateString();
 
-    // 問題読み込み
+    // --- 問題読み込み ---
     async function loadQuestions() {
       const genre = localStorage.getItem("selectedGenre") || "random";
       let pool = [];
 
+      // 公式問題
       if (genre === "random") {
-        // すべてのジャンルを読み込む
-        const genres = ["painting","history", "geography", "anime"];
+        const genres = ["painting", "history", "geography", "anime"];
         for (let g of genres) {
-          const res = await fetch(`data/${g}.json`);
-          const data = await res.json();
-          pool = pool.concat(data);
+          try {
+            const res = await fetch(`data/${g}.json`);
+            const data = await res.json();
+            pool = pool.concat(data);
+          } catch (e) {
+            console.warn(`${g}.json を読み込めませんでした`, e);
+          }
         }
       } else {
-        // 選んだジャンルだけ読み込む
-        const res = await fetch(`data/${genre}.json`);
-        pool = await res.json();
+        try {
+          const res = await fetch(`data/${genre}.json`);
+          const data = await res.json();
+          pool = pool.concat(data);
+        } catch (e) {
+          console.warn(`${genre}.json を読み込めませんでした`, e);
+        }
+      }
+
+      // ユーザーオリジナル問題
+      const currentUser = localStorage.getItem("currentUser");
+      if (currentUser) {
+        const key = "userQuestions_" + currentUser;
+        const userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
+
+        if (genre === "random") {
+          pool = pool.concat(userQuestions);
+        } else {
+          pool = pool.concat(userQuestions.filter(q => q.genre === genre));
+        }
+      }
+
+      if (pool.length === 0) {
+        alert("このジャンルには問題がありません！");
+        goHome();
+        return;
       }
 
       questions = pool;
       loadQuestion();
     }
 
-    // 問題を1問出す
+    // --- 問題を1問ランダムに出す ---
     function loadQuestion() {
       currentQuestion = questions[Math.floor(Math.random() * questions.length)];
-      document.getElementById("quiz-image").src = "images/" + currentQuestion.file;
+
+      // DataURL（オリジナル問題）とファイル名（公式問題）を区別
+      if (currentQuestion.file.startsWith("data:")) {
+        document.getElementById("quiz-image").src = currentQuestion.file;
+      } else {
+        document.getElementById("quiz-image").src = "images/" + currentQuestion.file;
+      }
+
       document.getElementById("userAnswer").value = "";
       document.getElementById("answerArea").textContent = "";
       document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = true);
     }
 
-    // 答えを表示
+    // --- 答えを表示 ---
     function showAnswer() {
       const userAns = document.getElementById("userAnswer").value.trim();
       document.getElementById("answerArea").textContent =
-        "正解: " + currentQuestion.answer + " ／ あなたの答え: " + userAns;
+        "正解: " + currentQuestion.answer.join(", ") + " ／ あなたの答え: " + userAns;
       document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = false);
     }
 
-    // 自己採点
+    // --- 自己採点 ---
     function markAnswer(isCorrect) {
       let total = parseInt(localStorage.getItem("quizTotal") || "0");
       total++;
@@ -102,20 +136,13 @@
       loadQuestion();
     }
 
-    // ページを開いたら問題を読み込む
-    loadQuestions();
-function goHome() {
-  window.location.href = "index.html";
-}
-    // ユーザーが追加した問題を読み込む
-const userData = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+    // --- ホームに戻る ---
+    function goHome() {
+      window.location.href = "index.html";
+    }
 
-if (genre === "random") {
-  questions = questions.concat(userData);
-} else {
-  const userFiltered = userData.filter(q => q.genre === genre);
-  questions = questions.concat(userFiltered);
-}
+    // ページを開いたら読み込み
+    loadQuestions();
   </script>
 </body>
 </html>
