@@ -69,6 +69,8 @@
   <!-- 管理画面ボタン -->
   <button onclick="location.href='manage.html'">管理画面へ</button>
 
+  <button onclick="logout()">ログアウト</button>
+
   <h2>オリジナル問題を追加</h2>
   <!-- ドロップゾーン -->
   <div id="dropZone"
@@ -184,6 +186,11 @@
       };
       reader.readAsDataURL(file);
     }
+    function logout() {
+    localStorage.removeItem("currentUser");
+    alert("ログアウトしました。");
+    location.href = "register.html";
+  }
   </script>
 </body>
 </html>
