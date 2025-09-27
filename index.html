@@ -82,6 +82,12 @@
   <img id="preview" style="max-width:200px;display:none;margin:10px auto;">
   <input type="file" id="userImage" accept="image/*"><br>
   <input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
+
+ <!-- ★ 補足情報入力欄（任意） -->
+<textarea id="userNoteInput" 
+          placeholder="補足情報（作者や解説など）※任意" 
+          style="width:80%;height:80px;font-size:16px;margin-top:10px;"></textarea><br>
+  
   <label for="userGenre">ジャンル:</label>
   <select id="userGenre">
     <option value="painting">絵画</option>
@@ -150,6 +156,7 @@
       const fileInput = document.getElementById("userImage");
       const answerInput = document.getElementById("userAnswerInput");
       const genreInput = document.getElementById("userGenre");
+      const noteInput = document.getElementById("userNoteInput"); // ← 補足情報欄
 
       const file = droppedFile || fileInput.files[0];
       if (!file || !answerInput.value.trim()) {
@@ -171,7 +178,8 @@
         userQuestions.push({
           file: e.target.result,
           answer: [answerInput.value.trim()],
-          genre: genreInput.value
+          genre: genreInput.value,
+          note: noteInput.value.trim() || ""   // ← 任意入力なので空でもOK
         });
         localStorage.setItem(key, JSON.stringify(userQuestions));
         alert("保存しました！（ジャンル: " + genreInput.value + "）");
@@ -181,6 +189,7 @@
         fileInput.value = "";
         document.getElementById("preview").style.display = "none";
         answerInput.value = "";
+        noteInput.value = "";
       };
       reader.readAsDataURL(file);
     }
