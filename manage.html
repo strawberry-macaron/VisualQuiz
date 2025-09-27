@@ -6,6 +6,7 @@
   <style>
     body { font-family: sans-serif; text-align: center; padding: 30px; }
     h1 { color: #ff69b4; }
+    #welcome { margin-bottom: 20px; font-size: 18px; }
     .question {
       border: 1px solid #ccc;
       padding: 10px;
@@ -24,16 +25,26 @@
 </head>
 <body>
   <h1>問題管理</h1>
+  <p id="welcome"></p>
   <button onclick="goHome()">ホームに戻る</button>
   <div id="questionList"></div>
 
   <script>
+    // --- ログイン確認 ---
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
+      alert("先にユーザー登録／ログインしてください！");
+      location.href = "register.html";
+    }
+    document.getElementById("welcome").textContent = "ログイン中: " + currentUser;
+
     // --- データを読み込み ---
     function loadQuestions() {
       const list = document.getElementById("questionList");
       list.innerHTML = "";
 
-      let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+      const key = "userQuestions_" + currentUser;
+      let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
 
       if (userQuestions.length === 0) {
         list.innerHTML = "<p>まだオリジナル問題がありません。</p>";
@@ -69,19 +80,21 @@
     // --- 削除処理 ---
     function deleteQuestion(index) {
       if (!confirm("この問題を削除しますか？")) return;
-      let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+      const key = "userQuestions_" + currentUser;
+      let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
       userQuestions.splice(index, 1);
-      localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
+      localStorage.setItem(key, JSON.stringify(userQuestions));
       loadQuestions();
     }
 
     // --- 編集処理 ---
     function editQuestion(index) {
-      let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+      const key = "userQuestions_" + currentUser;
+      let userQuestions = JSON.parse(localStorage.getItem(key) || "[]");
       const newAnswer = prompt("新しい答えを入力（カンマ区切り可）", userQuestions[index].answer.join(","));
       if (newAnswer !== null) {
         userQuestions[index].answer = newAnswer.split(",").map(a => a.trim());
-        localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
+        localStorage.setItem(key, JSON.stringify(userQuestions));
         loadQuestions();
       }
     }
