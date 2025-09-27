@@ -45,7 +45,7 @@
 
       if (genre === "random") {
         // すべてのジャンルを読み込む
-        const genres = ["history", "geography", "anime"];
+        const genres = ["painting","history", "geography", "anime"];
         for (let g of genres) {
           const res = await fetch(`data/${g}.json`);
           const data = await res.json();
