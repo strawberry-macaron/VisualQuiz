@@ -107,6 +107,9 @@
 function goHome() {
   window.location.href = "index.html";
 }
+    // ユーザーが追加した問題を読み込む
+const userData = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+questions = questions.concat(userData);
   </script>
 </body>
 </html>
