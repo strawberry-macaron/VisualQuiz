@@ -6,7 +6,7 @@
   <style>
     body { font-family: sans-serif; text-align: center; padding: 30px; }
     img { max-width: 400px; margin: 20px; border: 3px solid #ddd; border-radius: 10px; }
-    input, textarea { padding: 10px; font-size: 16px; }
+    input { padding: 10px; font-size: 18px; width: 250px; }
     button {
       margin: 10px; padding: 10px 20px; font-size: 18px;
       border: none; border-radius: 8px;
@@ -32,7 +32,7 @@
   <!-- 補足情報入力欄 -->
   <div id="extraArea" style="margin-top:20px;">
     <textarea id="extraNote" 
-              placeholder="ここに補足情報（例：作者、解説など）を書けます" 
+              placeholder="ここに補足情報やメモを書けます" 
               style="width:80%;height:80px;font-size:16px;padding:8px;"></textarea><br>
     <button onclick="saveNote()">メモを保存</button>
   </div>
@@ -121,20 +121,21 @@
     // --- 答えを表示 ---
     function showAnswer() {
       const userAns = document.getElementById("userAnswer").value.trim();
-      const correctAns = Array.isArray(currentQuestion.answer)
-        ? currentQuestion.answer.join(", ")
-        : currentQuestion.answer;
+      const currentUser = localStorage.getItem("currentUser") || "guest";
+      const notesKey = "extraNotes_" + currentUser;
+      const uniqueKey = currentQuestion.file + "_" + currentQuestion.answer.join(",");
+      const notes = JSON.parse(localStorage.getItem(notesKey) || "{}");
 
-      document.getElementById("answerArea").textContent =
-        "正解: " + correctAns + " ／ あなたの答え: " + userAns;
+      const extra = notes[uniqueKey] ? `<br><b>補足情報:</b> ${notes[uniqueKey]}` : "";
+
+      document.getElementById("answerArea").innerHTML =
+        `<div><b>正解:</b> ${currentQuestion.answer.join(", ")}<br>
+         <b>あなたの答え:</b> ${userAns}${extra}</div>`;
 
       document.querySelectorAll("button[onclick^='markAnswer']").forEach(btn => btn.disabled = false);
 
-      // 保存されている補足情報を読み込む（ユーザー × 問題ごと）
-      const currentUser = localStorage.getItem("currentUser") || "guest";
-      const notesKey = "extraNotes_" + currentUser;
-      const notes = JSON.parse(localStorage.getItem(notesKey) || "{}");
-      document.getElementById("extraNote").value = notes[currentQuestion.file] || "";
+      // textarea に保存済みのメモを反映
+      document.getElementById("extraNote").value = notes[uniqueKey] || "";
     }
 
     // --- 自己採点 ---
@@ -156,14 +157,21 @@
       loadQuestion();
     }
 
-    // --- 補足情報の保存（ユーザー × 問題ごと） ---
+    // --- 補足情報を保存（ユーザーごと／問題ごと） ---
     function saveNote() {
       const note = document.getElementById("extraNote").value.trim();
+      if (!note) {
+        alert("補足情報を入力してください。");
+        return;
+      }
+
       const currentUser = localStorage.getItem("currentUser") || "guest";
       const notesKey = "extraNotes_" + currentUser;
+      const uniqueKey = currentQuestion.file + "_" + currentQuestion.answer.join(",");
 
       let notes = JSON.parse(localStorage.getItem(notesKey) || "{}");
-      notes[currentQuestion.file] = note; // 問題ごとに保存
+      notes[uniqueKey] = note;
+
       localStorage.setItem(notesKey, JSON.stringify(notes));
       alert("補足情報を保存しました！");
     }
