@@ -60,6 +60,11 @@
   <!-- 累計記録ボタン -->
   <button onclick="showTotalStats()">プレイした累計問題数</button>
 
+  <h2>オリジナル問題を追加</h2>
+  <input type="file" id="userImage" accept="image/*"><br>
+  <input type="text" id="userAnswerInput" placeholder="答えを入力"><br>
+  <button onclick="saveUserQuestion()">保存する</button>
+
   <script>
     // クイズ開始
     function startQuiz() {
@@ -85,6 +90,29 @@
       const total = localStorage.getItem("quizTotal") || 0;
       alert("累計プレイした問題数: " + total + "問");
     }
+    function saveUserQuestion() {
+  const fileInput = document.getElementById("userImage");
+  const answerInput = document.getElementById("userAnswerInput");
+
+  if (!fileInput.files[0] || !answerInput.value.trim()) {
+    alert("画像と答えを両方入力してください！");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let userQuestions = JSON.parse(localStorage.getItem("userQuestions") || "[]");
+    userQuestions.push({
+      file: e.target.result,  // DataURLとして保存
+      answer: [answerInput.value.trim()]
+    });
+    localStorage.setItem("userQuestions", JSON.stringify(userQuestions));
+    alert("保存しました！（このブラウザ専用です）");
+    fileInput.value = "";
+    answerInput.value = "";
+  };
+  reader.readAsDataURL(fileInput.files[0]);
+}
   </script>
 </body>
 </html>
